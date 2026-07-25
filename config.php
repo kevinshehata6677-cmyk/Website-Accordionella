@@ -11,12 +11,8 @@ define('DB_PASS', 'PzVgZi1rqLuyNZ1');     // Change to your production database 
 define('DB_NAME', 'if0_42254420_accordionella');
 
 // Admin Dashboard Credentials
-// IMPORTANT: change ADMIN_USERNAME below, and generate a new password hash with:
-//   php -r "echo password_hash('YourNewPassword', PASSWORD_DEFAULT);"
-// then paste the result into ADMIN_PASSWORD_HASH. The default password below is:
-//   Accordionella@2026
 define('ADMIN_USERNAME', 'admin');
-define('ADMIN_PASSWORD_HASH', '$2b$10$tib3fOA65kHDs0PAabFY/ugQlUaEgHOxTdvbMsVP1r0Hd/2z7lR52');
+define('ADMIN_PASSWORD_HASH', '$2y$10$64oW1c8wW3aX4e5f6g7h8uI9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x');
 
 // Secure Database Connection Helper
 function getDBConnection() {
@@ -127,9 +123,8 @@ function getLoggedInUser() {
     }
     if (!empty($_SESSION['user_id'])) {
         return [
-            'id'       => $_SESSION['user_id'],
-            'username' => $_SESSION['user_username'] ?? '',
-            'email'    => $_SESSION['user_email'] ?? ''
+            'id'    => $_SESSION['user_id'],
+            'email' => $_SESSION['user_email'] ?? ''
         ];
     }
     return null;

@@ -1,5 +1,6 @@
 <?php
 // user_register.php
+// Creates a client user account with email and password (no username required)
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', 0);
@@ -11,26 +12,12 @@ try {
     $inputData = file_get_contents('php://input');
     $data = json_decode($inputData, true);
 
-    $username = trim($data['username'] ?? '');
     $email    = trim(strtolower($data['email'] ?? ''));
     $password = $data['password'] ?? '';
-    $phone    = trim($data['phone'] ?? '');
 
-    if (empty($username) || empty($email) || empty($password)) {
+    if (empty($email) || empty($password)) {
         if (ob_get_length()) ob_clean();
-        echo json_encode(["status" => "error", "message" => "Username, email, and password are required."]);
-        exit;
-    }
-
-    if (strlen($username) < 3) {
-        if (ob_get_length()) ob_clean();
-        echo json_encode(["status" => "error", "message" => "Username must be at least 3 characters long."]);
-        exit;
-    }
-
-    if (strlen($password) < 6) {
-        if (ob_get_length()) ob_clean();
-        echo json_encode(["status" => "error", "message" => "Password must be at least 6 characters long."]);
+        echo json_encode(["status" => "error", "message" => "Email and password are required."]);
         exit;
     }
 
@@ -40,44 +27,52 @@ try {
         exit;
     }
 
-    $pdo = getDBConnection();
-
-    // Check if username or email already exists
-    $chk = $pdo->prepare("SELECT id FROM users WHERE username = :u OR email = :e LIMIT 1");
-    $chk->execute([':u' => $username, ':e' => $email]);
-    if ($chk->fetch()) {
+    if (strlen($password) < 6) {
         if (ob_get_length()) ob_clean();
-        echo json_encode(["status" => "error", "message" => "An account with that username or email already exists."]);
+        echo json_encode(["status" => "error", "message" => "Password must be at least 6 characters long."]);
         exit;
     }
 
+    $pdo = getDBConnection();
+
+    // Check if email already exists
+    $chk = $pdo->prepare("SELECT id FROM users WHERE LOWER(email) = :e LIMIT 1");
+    $chk->execute([':e' => $email]);
+    if ($chk->fetch()) {
+        if (ob_get_length()) ob_clean();
+        echo json_encode(["status" => "error", "message" => "An account with this email address already exists. Please log in."]);
+        exit;
+    }
+
+    $username = $email; // Use email as default username internal value
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
-    $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, phone) VALUES (:u, :e, :h, :p)");
+    $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (:u, :e, :h)");
     $stmt->execute([
         ':u' => $username,
         ':e' => $email,
-        ':h' => $hash,
-        ':p' => $phone
+        ':h' => $hash
     ]);
 
     $userId = $pdo->lastInsertId();
 
+    // Automatically link any past/pending reservations submitted under this email
+    $linkStmt = $pdo->prepare("UPDATE bookings SET user_id = :uid WHERE LOWER(client_email) = :e AND (user_id IS NULL OR user_id = 0)");
+    $linkStmt->execute([':uid' => $userId, ':e' => $email]);
+
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
-    $_SESSION['user_id']       = $userId;
-    $_SESSION['user_username'] = $username;
-    $_SESSION['user_email']    = $email;
+    $_SESSION['user_id']    = $userId;
+    $_SESSION['user_email'] = $email;
 
     if (ob_get_length()) ob_clean();
     echo json_encode([
         "status" => "success",
         "message" => "Account created successfully.",
         "user" => [
-            "id"       => $userId,
-            "username" => $username,
-            "email"    => $email
+            "id"    => $userId,
+            "email" => $email
         ]
     ]);
     exit;

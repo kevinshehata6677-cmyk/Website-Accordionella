@@ -48,19 +48,12 @@ try {
     if ($currentUser) {
         $userId = $currentUser['id'];
     } elseif (!empty($data['create_account'])) {
-        // Create new account as requested during booking
-        $accUsername = trim($data['account_username'] ?? '');
+        // Create new account as requested during booking (using email + password)
         $accPassword = $data['account_password'] ?? '';
 
-        if (empty($accUsername) || empty($accPassword) || empty($clientEmail)) {
+        if (empty($clientEmail) || empty($accPassword)) {
             if (ob_get_length()) ob_clean();
-            echo json_encode(["status" => "error", "message" => "To create an account, email, username, and password are required."]);
-            exit;
-        }
-
-        if (strlen($accUsername) < 3) {
-            if (ob_get_length()) ob_clean();
-            echo json_encode(["status" => "error", "message" => "Account username must be at least 3 characters long."]);
+            echo json_encode(["status" => "error", "message" => "To create an account, email address and password are required."]);
             exit;
         }
 
@@ -70,32 +63,30 @@ try {
             exit;
         }
 
-        // Check if username or email already exists
-        $chk = $pdo->prepare("SELECT id FROM users WHERE username = :u OR email = :e LIMIT 1");
-        $chk->execute([':u' => $accUsername, ':e' => $clientEmail]);
-        if ($chk->fetch()) {
-            if (ob_get_length()) ob_clean();
-            echo json_encode(["status" => "error", "message" => "An account with that username or email already exists. Please log in first."]);
-            exit;
+        // Check if account with this email already exists
+        $chk = $pdo->prepare("SELECT id FROM users WHERE LOWER(email) = :e LIMIT 1");
+        $chk->execute([':e' => $clientEmail]);
+        $existing = $chk->fetch(PDO::FETCH_ASSOC);
+        if ($existing) {
+            $userId = $existing['id'];
+        } else {
+            $hash = password_hash($accPassword, PASSWORD_DEFAULT);
+            $userStmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, phone) VALUES (:u, :e, :h, :p)");
+            $userStmt->execute([
+                ':u' => $clientEmail,
+                ':e' => $clientEmail,
+                ':h' => $hash,
+                ':p' => $clientPhone
+            ]);
+            $userId = $pdo->lastInsertId();
         }
-
-        $hash = password_hash($accPassword, PASSWORD_DEFAULT);
-        $userStmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, phone) VALUES (:u, :e, :h, :p)");
-        $userStmt->execute([
-            ':u' => $accUsername,
-            ':e' => $clientEmail,
-            ':h' => $hash,
-            ':p' => $clientPhone
-        ]);
-        $userId = $pdo->lastInsertId();
 
         // Auto-login session
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $_SESSION['user_id']       = $userId;
-        $_SESSION['user_username'] = $accUsername;
-        $_SESSION['user_email']    = $clientEmail;
+        $_SESSION['user_id']    = $userId;
+        $_SESSION['user_email'] = $clientEmail;
     }
 
     $sql = "INSERT INTO bookings (

@@ -518,7 +518,7 @@
             background: #fff;
             border-radius: var(--radius);
             width: 100%;
-            max-width: 480px;
+            max-width: 500px;
             padding: 32px;
             box-shadow: 0 25px 80px rgba(0,0,0,0.4);
             position: relative;
@@ -563,7 +563,7 @@
         .user-booking-title { font-weight: 700; color: var(--text); font-size: 15px; }
 
         .badge-status {
-            display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
         }
         .badge-status.Pending { background: var(--amber-bg); color: var(--amber); }
         .badge-status.Confirmed { background: var(--green-bg); color: var(--green); }
@@ -724,10 +724,6 @@
                     </label>
 
                     <div id="account-fields" style="display:none; margin-top:14px;">
-                        <div class="field-group">
-                            <label id="label-acc-user">Account Username</label>
-                            <input type="text" id="acc-username" placeholder="Choose a username">
-                        </div>
                         <div class="field-group" style="margin-bottom:0;">
                             <label id="label-acc-pass">Account Password</label>
                             <input type="password" id="acc-password" placeholder="Choose a password (min 6 chars)">
@@ -787,18 +783,13 @@
 
                 <form id="auth-form" onsubmit="handleAuthSubmit(event)">
                     <div class="field-group">
-                        <label id="lbl-auth-login">Username or Email</label>
-                        <input type="text" id="auth-login" required placeholder="Enter username or email">
-                    </div>
-
-                    <div class="field-group" id="group-auth-email" style="display:none;">
-                        <label>Email Address</label>
-                        <input type="email" id="auth-email" placeholder="you@example.com">
+                        <label id="lbl-auth-email">Email Address</label>
+                        <input type="email" id="auth-email" required placeholder="you@example.com">
                     </div>
 
                     <div class="field-group">
                         <label id="lbl-auth-pass">Password</label>
-                        <input type="password" id="auth-pass" required placeholder="Enter password">
+                        <input type="password" id="auth-pass" required placeholder="Enter password (min 6 chars)">
                     </div>
 
                     <button type="submit" class="btn" id="btn-auth-submit" style="margin-top:10px;">
@@ -810,11 +801,14 @@
             <!-- Logged-In User Profile View -->
             <div id="modal-profile-view" style="display:none;">
                 <h3 style="font-family:'Playfair Display',serif; font-size:22px; margin-bottom:4px;" id="user-greeting">Welcome back!</h3>
-                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;" id="user-email-display"></p>
+                <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;" id="user-email-display"></p>
 
                 <div style="border-top:1px solid var(--border); padding-top:16px;">
-                    <h4 style="font-size:14px; font-weight:700; margin-bottom:12px;">Your Reservations</h4>
-                    <div id="user-bookings-list" style="max-height:260px; overflow-y:auto;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+                        <span id="lbl-my-reservations">Your Reservations</span>
+                        <span id="user-res-count" style="font-size:12px; color:var(--blue); background:rgba(48,111,164,0.1); padding:2px 8px; border-radius:100px;">0</span>
+                    </h4>
+                    <div id="user-bookings-list" style="max-height:280px; overflow-y:auto; padding-right:4px;">
                         <p style="color:var(--text-muted); font-size:13px;">Loading your activity...</p>
                     </div>
                 </div>
@@ -843,7 +837,7 @@
             liveBadge: "Now Booking 2026 Season",
             tagline: "Premium Music Experience",
             welcomeTitle: "Book Accordionella",
-            welcomeDesc: "Reserve the premium musical experience for your elite events — weddings, corporate galas, private parties & more.",
+            welcomeDesc: "Reserve the premium musical experience for your elite events — weddings, corporate galas, private parties &amp; more.",
             pill1: "Live Performance", pill2: "Any Venue", pill3: "Sound System Optional",
             welcomeBtn: "Start Your Reservation",
             step2Title: "Tell Us About Your Event",
@@ -877,7 +871,6 @@
             labelSound: "Do You Need a Sound System?",
             soundYes: "Yes, please", soundNo: "No, we'll arrange",
             labelChkAccount: "Create an account to track your reservation status",
-            labelAccUser: "Account Username",
             labelAccPass: "Account Password",
             quoteHint: "This helps us prepare an accurate quotation for your event.",
             submitBtnText: "Submit Booking Request",
@@ -932,7 +925,6 @@
             labelSound: "هل تحتاج إلى نظام صوت؟",
             soundYes: "نعم، أحتاج", soundNo: "لا، سأقوم بالترتيب",
             labelChkAccount: "إنشاء حساب لمتابعة حالة حجزك ومواعيدك",
-            labelAccUser: "اسم المستخدم للحساب",
             labelAccPass: "كلمة المرور",
             quoteHint: "يساعدنا هذا في تجهيز عرض سعر دقيق لمناسبتك.",
             submitBtnText: "إرسال طلب الحجز",
@@ -981,7 +973,7 @@
         const t = translations[currentLang];
         const btnText = document.getElementById('user-nav-text');
         if (loggedInUser) {
-            btnText.innerText = loggedInUser.username;
+            btnText.innerText = loggedInUser.email;
             document.getElementById('account-creation-box').style.display = 'none';
         } else {
             btnText.innerText = t.userNavLogin;
@@ -1082,7 +1074,6 @@
         document.getElementById('sound-no-text').innerText = t.soundNo;
 
         document.getElementById('label-chk-account').innerText = t.labelChkAccount;
-        document.getElementById('label-acc-user').innerText = t.labelAccUser;
         document.getElementById('label-acc-pass').innerText = t.labelAccPass;
 
         document.getElementById('quote-hint').innerText = t.quoteHint;
@@ -1178,11 +1169,10 @@
 
         const chkCreateAccount = document.getElementById('chk-create-account');
         const createAccount = chkCreateAccount ? chkCreateAccount.checked : false;
-        const accUsername = document.getElementById('acc-username').value.trim();
         const accPassword = document.getElementById('acc-password').value;
 
-        if (createAccount && (!accUsername || !accPassword)) {
-            alert(currentLang === 'ar' ? 'يرجى كتابة اسم المستخدم وكلمة المرور لإنشاء الحساب.' : 'Please enter a username and password to create your account.');
+        if (createAccount && !accPassword) {
+            alert(currentLang === 'ar' ? 'يرجى كتابة كلمة المرور لإنشاء الحساب.' : 'Please enter a password to create your account.');
             return;
         }
 
@@ -1201,7 +1191,6 @@
             sound_system:     sound,
             lang:             currentLang,
             create_account:   createAccount,
-            account_username: accUsername,
             account_password: accPassword
         };
 
@@ -1280,7 +1269,7 @@
         if (loggedInUser) {
             document.getElementById('modal-auth-view').style.display = 'none';
             document.getElementById('modal-profile-view').style.display = 'block';
-            document.getElementById('user-greeting').innerText = `Hello, ${loggedInUser.username}!`;
+            document.getElementById('user-greeting').innerText = currentLang === 'ar' ? `مرحباً بعودتك!` : `Welcome back!`;
             document.getElementById('user-email-display').innerText = loggedInUser.email;
             loadUserBookings();
         } else {
@@ -1297,21 +1286,16 @@
         activeAuthTab = tab;
         document.getElementById('tab-login').classList.toggle('active', tab === 'login');
         document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-        document.getElementById('group-auth-email').style.display = tab === 'register' ? 'block' : 'none';
-        document.getElementById('lbl-auth-login').innerText = tab === 'register' ? 'Choose Username' : 'Username or Email';
-        document.getElementById('btn-auth-text').innerText = tab === 'register' ? 'Create Account' : 'Log In';
+        document.getElementById('btn-auth-text').innerText = tab === 'register' ? (currentLang === 'ar' ? 'إنشاء حساب' : 'Create Account') : (currentLang === 'ar' ? 'تسجيل الدخول' : 'Log In');
     }
 
     function handleAuthSubmit(e) {
         e.preventDefault();
-        const loginVal = document.getElementById('auth-login').value.trim();
         const emailVal = document.getElementById('auth-email').value.trim();
         const passVal  = document.getElementById('auth-pass').value;
 
         const endpoint = activeAuthTab === 'register' ? 'user_register.php' : 'user_login.php';
-        const payload  = activeAuthTab === 'register' 
-            ? { username: loginVal, email: emailVal, password: passVal }
-            : { login: loginVal, password: passVal };
+        const payload  = { email: emailVal, password: passVal };
 
         fetch(endpoint, {
             method: 'POST',
@@ -1343,28 +1327,50 @@
             });
     }
 
+    function getStatusBadgeHTML(status) {
+        if (status === 'Pending') {
+            return `<span class="badge-status Pending">
+                <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--amber);fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>${currentLang === 'ar' ? 'قيد المراجعة والاعتماد' : 'Pending Admin Confirmation'}</span>
+            </span>`;
+        }
+        if (status === 'Confirmed') {
+            return `<span class="badge-status Confirmed">
+                <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--green);fill:none;stroke-width:2.5;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>${currentLang === 'ar' ? 'مؤكد ومدرج بالتقويم' : 'Confirmed & Scheduled'}</span>
+            </span>`;
+        }
+        return `<span class="badge-status Cancelled">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--red);fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <span>${currentLang === 'ar' ? 'ملغى' : 'Cancelled'}</span>
+        </span>`;
+    }
+
     function loadUserBookings() {
         const container = document.getElementById('user-bookings-list');
+        const countSpan = document.getElementById('user-res-count');
         container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Loading your activity...</p>';
 
         fetch('get_user_bookings.php')
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success' && data.bookings.length > 0) {
+                    countSpan.innerText = data.bookings.length;
                     container.innerHTML = data.bookings.map(b => `
                         <div class="user-booking-item">
                             <div class="user-booking-header">
                                 <div class="user-booking-title">${escapeHtml(b.event_type || 'Event')}</div>
-                                <span class="badge-status ${b.status}">${escapeHtml(b.status)}</span>
+                                ${getStatusBadgeHTML(b.status)}
                             </div>
-                            <div style="font-size:12.5px; color:var(--text-muted);">
-                                <div>📅 ${b.booking_date ? b.booking_date + (b.booking_time ? ' at ' + b.booking_time.substring(0,5) : '') : 'Date to be confirmed'}</div>
-                                <div>📍 ${escapeHtml(b.event_location || 'Venue to be confirmed')}</div>
+                            <div style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
+                                <div>📅 ${b.booking_date ? b.booking_date + (b.booking_time ? ' · ' + b.booking_time.substring(0,5) : '') : (currentLang === 'ar' ? 'التاريخ: سيتم التحديد مع الفريق' : 'Date: To be confirmed with team')}</div>
+                                <div>📍 ${escapeHtml(b.event_location || (currentLang === 'ar' ? 'المكان: سيتم التحديد' : 'Venue: To be confirmed'))}</div>
                             </div>
                         </div>
                     `).join('');
                 } else {
-                    container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">You have no active event reservations yet.</p>';
+                    countSpan.innerText = '0';
+                    container.innerHTML = `<p style="color:var(--text-muted); font-size:13px;">${currentLang === 'ar' ? 'ليس لديك أي طلبات حجز حالياً.' : 'You have no event reservations yet.'}</p>`;
                 }
             })
             .catch(() => {
