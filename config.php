@@ -45,6 +45,16 @@ function getDBConnection() {
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
+        // Auto-create users table if it doesn't exist yet
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `users` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `username` VARCHAR(100) NOT NULL UNIQUE,
+            `email` VARCHAR(255) NOT NULL,
+            `password_hash` VARCHAR(255) NOT NULL,
+            `phone` VARCHAR(100) DEFAULT NULL,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
         // Ensure missing columns are dynamically added if table existed from an older version
         $existingCols = [];
         $colStmt = $pdo->query("SHOW COLUMNS FROM `bookings`");
@@ -53,6 +63,7 @@ function getDBConnection() {
         }
 
         $neededCols = [
+            'user_id'         => "ADD COLUMN `user_id` INT NULL DEFAULT NULL",
             'client_name'     => "ADD COLUMN `client_name` VARCHAR(255) NOT NULL DEFAULT ''",
             'client_email'    => "ADD COLUMN `client_email` VARCHAR(255) DEFAULT ''",
             'client_phone'    => "ADD COLUMN `client_phone` VARCHAR(100) NOT NULL DEFAULT ''",
@@ -107,5 +118,34 @@ function requireAdminLogin() {
         echo json_encode(["status" => "error", "message" => "Not authenticated. Please log in."]);
         exit;
     }
+}
+
+// Client authentication helpers
+function getLoggedInUser() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!empty($_SESSION['user_id'])) {
+        return [
+            'id'       => $_SESSION['user_id'],
+            'username' => $_SESSION['user_username'] ?? '',
+            'email'    => $_SESSION['user_email'] ?? ''
+        ];
+    }
+    return null;
+}
+
+function requireUserLogin() {
+    $user = getLoggedInUser();
+    if (!$user) {
+        if (ob_get_length()) ob_clean();
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+            http_response_code(401);
+        }
+        echo json_encode(["status" => "error", "message" => "Please log in to access your account."]);
+        exit;
+    }
+    return $user;
 }
 ?>

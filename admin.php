@@ -16,8 +16,10 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard — Accordionella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     :root {
         --blue: #306fa4;
         --blue-dark: #1e4a70;
@@ -31,7 +33,7 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
         --text: #0f172a;
         --text-muted: #64748b;
         --border: #e2e8f0;
-        --bg: #f5f7fa;
+        --bg: #f8fafc;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -39,16 +41,24 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
     .topbar {
         background: #090d16;
         color: #fff;
-        padding: 18px 32px;
+        padding: 16px 32px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     .topbar .brand {
         display: flex;
         align-items: center;
         gap: 12px;
     }
+    .topbar .brand-icon {
+        width: 38px; height: 38px;
+        background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .topbar .brand-icon svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; }
     .topbar .brand-name {
         font-family: 'Playfair Display', serif;
         font-size: 20px;
@@ -57,52 +67,75 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
     }
     .topbar .brand-sub {
         font-size: 11px;
-        color: rgba(255,255,255,0.6);
+        color: rgba(255,255,255,0.5);
         text-transform: uppercase;
         letter-spacing: 1px;
     }
-    .topbar .right { display: flex; align-items: center; gap: 16px; font-size: 13px; }
+    .topbar .right { display: flex; align-items: center; gap: 18px; font-size: 13px; }
+    .topbar .admin-badge {
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-weight: 600;
+    }
+    .topbar .admin-badge svg { width: 15px; height: 15px; stroke: var(--blue-light); fill: none; stroke-width: 2; }
     .topbar .logout-link {
         color: #fff;
         background: rgba(255,255,255,0.1);
         border: 1px solid rgba(255,255,255,0.2);
-        padding: 8px 16px;
+        padding: 8px 18px;
         border-radius: 100px;
         text-decoration: none;
         font-weight: 600;
+        display: flex; align-items: center; gap: 6px;
         transition: all 0.25s ease;
     }
+    .topbar .logout-link svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; }
     .topbar .logout-link:hover { background: rgba(255,255,255,0.2); }
 
-    .container { max-width: 1180px; margin: 0 auto; padding: 32px 24px 60px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px; }
 
-    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
     .stat-card {
         background: #fff;
-        border-radius: 18px;
-        padding: 20px 22px;
+        border-radius: 20px;
+        padding: 22px 24px;
         border: 1px solid var(--border);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        display: flex; align-items: center; justify-content: space-between;
     }
-    .stat-card .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px; }
-    .stat-card .stat-value { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--blue-dark); }
+    .stat-card .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 6px; }
+    .stat-card .stat-value { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--text); }
+    .stat-icon {
+        width: 48px; height: 48px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--bg);
+    }
+    .stat-icon svg { width: 24px; height: 24px; stroke: var(--blue); fill: none; stroke-width: 2; }
 
     .panel {
         background: #fff;
-        border-radius: 18px;
+        border-radius: 20px;
         border: 1px solid var(--border);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.03);
         overflow: hidden;
     }
     .panel-header {
-        padding: 20px 24px;
+        padding: 22px 26px;
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-    .panel-header h2 { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; }
-    .filter-tabs { display: flex; gap: 6px; }
+    .panel-header h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+    .filter-tabs { display: flex; gap: 8px; }
     .filter-tab {
-        padding: 7px 14px;
+        padding: 8px 16px;
         border-radius: 100px;
         font-size: 12.5px;
         font-weight: 600;
@@ -122,60 +155,89 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
         letter-spacing: 0.6px;
         color: var(--text-muted);
         font-weight: 700;
-        padding: 12px 16px;
-        background: #fafbfc;
+        padding: 14px 18px;
+        background: #f8fafc;
         border-bottom: 1px solid var(--border);
         white-space: nowrap;
     }
-    tbody td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tbody td { padding: 16px 18px; border-bottom: 1px solid var(--border); vertical-align: top; }
     tbody tr:hover { background: #fafbfc; }
     tbody tr:last-child td { border-bottom: none; }
 
     .badge {
-        display: inline-block;
-        padding: 4px 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
         border-radius: 100px;
         font-size: 11.5px;
         font-weight: 700;
     }
+    .badge svg { width: 12px; height: 12px; stroke-width: 2.5; fill: none; }
     .badge.Pending { background: var(--amber-bg); color: var(--amber); }
+    .badge.Pending svg { stroke: var(--amber); }
     .badge.Confirmed { background: var(--green-bg); color: var(--green); }
+    .badge.Confirmed svg { stroke: var(--green); }
     .badge.Cancelled { background: var(--red-bg); color: var(--red); }
+    .badge.Cancelled svg { stroke: var(--red); }
 
-    .sound-tag { font-size: 12px; color: var(--text-muted); }
+    .sound-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .sound-tag svg { width: 14px; height: 14px; stroke-width: 2; fill: none; }
     .sound-tag.yes { color: var(--blue-dark); font-weight: 600; }
+    .sound-tag.yes svg { stroke: var(--blue); }
 
     .action-btn {
         font-size: 12px;
         font-weight: 700;
-        padding: 7px 13px;
+        padding: 8px 14px;
         border-radius: 100px;
         border: none;
         cursor: pointer;
-        margin-right: 6px;
+        display: inline-flex; align-items: center; gap: 6px;
         transition: all 0.2s ease;
     }
+    .action-btn svg { width: 14px; height: 14px; fill: none; stroke-width: 2.5; }
     .action-btn.confirm { background: var(--blue); color: #fff; }
+    .action-btn.confirm svg { stroke: #fff; }
     .action-btn.confirm:hover { background: var(--blue-dark); }
-    .action-btn.cancel { background: transparent; color: var(--red); border: 1px solid rgba(185,28,28,0.3); }
+    .action-btn.cancel { background: transparent; color: var(--red); border: 1px solid rgba(185,28,28,0.3); margin-left: 4px; }
+    .action-btn.cancel svg { stroke: var(--red); }
     .action-btn.cancel:hover { background: var(--red-bg); }
     .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .empty-state { padding: 60px 24px; text-align: center; color: var(--text-muted); }
-    .client-name { font-weight: 600; color: var(--text); }
-    .client-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .client-name { font-weight: 700; color: var(--text); }
+    .client-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+    .client-sub svg { width: 13px; height: 13px; stroke: var(--text-muted); fill: none; stroke-width: 2; shrink: 0; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
     <div class="brand">
-        <span class="brand-name">Accordionella</span>
-        <span class="brand-sub">Admin Dashboard</span>
+        <div class="brand-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        </div>
+        <div>
+            <div class="brand-name">Accordionella</div>
+            <div class="brand-sub">Admin Portal</div>
+        </div>
     </div>
     <div class="right">
-        <span>Hello, <?php echo $adminUsername; ?></span>
-        <a href="admin_logout.php" class="logout-link">Log Out</a>
+        <div class="admin-badge">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span><?php echo $adminUsername; ?></span>
+        </div>
+        <a href="admin_logout.php" class="logout-link">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Log Out</span>
+        </a>
     </div>
 </div>
 
@@ -183,22 +245,37 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
 
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-label">Total Requests</div>
-            <div class="stat-value" id="stat-total">—</div>
+            <div>
+                <div class="stat-label">Total Requests</div>
+                <div class="stat-value" id="stat-total">—</div>
+            </div>
+            <div class="stat-icon">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Awaiting Confirmation</div>
-            <div class="stat-value" id="stat-pending">—</div>
+            <div>
+                <div class="stat-label">Awaiting Confirmation</div>
+                <div class="stat-value" id="stat-pending">—</div>
+            </div>
+            <div class="stat-icon" style="background: var(--amber-bg);">
+                <svg viewBox="0 0 24 24" style="stroke: var(--amber);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Confirmed Events</div>
-            <div class="stat-value" id="stat-confirmed">—</div>
+            <div>
+                <div class="stat-label">Confirmed Events</div>
+                <div class="stat-value" id="stat-confirmed">—</div>
+            </div>
+            <div class="stat-icon" style="background: var(--green-bg);">
+                <svg viewBox="0 0 24 24" style="stroke: var(--green);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
         </div>
     </div>
 
     <div class="panel">
         <div class="panel-header">
-            <h2>Bookings</h2>
+            <h2>Booking Reservations</h2>
             <div class="filter-tabs">
                 <div class="filter-tab active" data-filter="all" onclick="setFilter('all')">All</div>
                 <div class="filter-tab" data-filter="Pending" onclick="setFilter('Pending')">Pending</div>
@@ -262,11 +339,12 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
     }
 
     function formatDate(dateStr, timeStr) {
+        if (!dateStr) return 'To be confirmed';
         try {
             const d = new Date(dateStr + 'T' + (timeStr || '00:00'));
-            return d.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) + ' · ' + (timeStr || '').substring(0,5);
+            return d.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) + (timeStr ? ' · ' + timeStr.substring(0,5) : '');
         } catch (e) {
-            return dateStr + ' ' + timeStr;
+            return dateStr + ' ' + (timeStr || '');
         }
     }
 
@@ -286,20 +364,46 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
             <tr>
                 <td>
                     <div class="client-name">${escapeHtml(b.client_name)}</div>
-                    <div class="client-sub">${escapeHtml(b.client_phone)}</div>
-                    <div class="client-sub">${escapeHtml(b.client_email || '')}</div>
+                    <div class="client-sub">
+                        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>${escapeHtml(b.client_phone)}</span>
+                    </div>
+                    ${b.client_email ? `
+                        <div class="client-sub">
+                            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <span>${escapeHtml(b.client_email)}</span>
+                        </div>
+                    ` : ''}
                 </td>
-                <td>${escapeHtml(b.event_type || '—')}</td>
+                <td><strong>${escapeHtml(b.event_type || '—')}</strong></td>
                 <td>${formatDate(b.booking_date, b.booking_time)}</td>
                 <td>${escapeHtml(b.event_location || '—')}</td>
-                <td><span class="sound-tag ${b.sound_system === 'yes' ? 'yes' : ''}">${b.sound_system === 'yes' ? '🔊 Needed' : 'Not needed'}</span></td>
+                <td>
+                    <span class="sound-tag ${b.sound_system === 'yes' ? 'yes' : ''}">
+                        <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        <span>${b.sound_system === 'yes' ? 'Needed' : 'Not needed'}</span>
+                    </span>
+                </td>
                 <td>${escapeHtml(b.referral_source || '—')}</td>
-                <td><span class="badge ${b.status}">${escapeHtml(b.status)}</span></td>
+                <td>
+                    <span class="badge ${b.status}">
+                        ${b.status === 'Confirmed' ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                        ${b.status === 'Pending' ? '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line></svg>' : ''}
+                        ${b.status === 'Cancelled' ? '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : ''}
+                        <span>${escapeHtml(b.status)}</span>
+                    </span>
+                </td>
                 <td>
                     ${b.status === 'Pending' ? `
-                        <button class="action-btn confirm" onclick="updateStatus(${b.id}, 'confirm', this)">Confirm</button>
-                        <button class="action-btn cancel" onclick="updateStatus(${b.id}, 'cancel', this)">Cancel</button>
-                    ` : '<span style="color:#94a3b8;font-size:12px;">No action</span>'}
+                        <button class="action-btn confirm" onclick="updateStatus(${b.id}, 'confirm', this)">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Approve</span>
+                        </button>
+                        <button class="action-btn cancel" onclick="updateStatus(${b.id}, 'cancel', this)">
+                            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            <span>Reject</span>
+                        </button>
+                    ` : '<span style="color:#94a3b8;font-size:12px;">Completed</span>'}
                 </td>
             </tr>
         `).join('');
@@ -312,8 +416,8 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
     }
 
     function updateStatus(bookingId, action, btnEl) {
-        if (action === 'confirm' && !confirm('Confirm this booking? This will create the Google Calendar event (starting 2 hours early) and send the client a confirmation email.')) return;
-        if (action === 'cancel' && !confirm('Cancel this booking request?')) return;
+        if (action === 'confirm' && !confirm('Approve and confirm this reservation? This will create the Google Calendar event and send the client a confirmation email.')) return;
+        if (action === 'cancel' && !confirm('Reject and cancel this booking request?')) return;
 
         const row = btnEl.closest('tr');
         row.querySelectorAll('.action-btn').forEach(b => b.disabled = true);

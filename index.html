@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accordionella Reservation</title>
+    <title>Accordionella — Premium Musical Experience &amp; Reservations</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
         :root {
             --blue: #306fa4;
             --blue-light: #4f95cf;
             --blue-dark: #1e4a70;
             --blue-glow: rgba(48, 111, 164, 0.35);
-            --amber: #e0a73a;
+            --amber: #d97706;
+            --amber-bg: #fef3c7;
+            --green: #15803d;
+            --green-bg: #dcfce7;
+            --red: #b91c1c;
+            --red-bg: #fee2e2;
             --white: #ffffff;
             --text: #0f172a;
             --text-muted: #64748b;
@@ -41,7 +48,7 @@
             overflow-x: hidden;
         }
 
-        /* Ambient animated background using the live band image asset */
+        /* Background artwork */
         body::before {
             content: '';
             position: fixed;
@@ -66,12 +73,11 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, rgba(9, 13, 22, 0.85), rgba(48, 111, 164, 0.2));
+            background: linear-gradient(135deg, rgba(9, 13, 22, 0.88), rgba(48, 111, 164, 0.22));
             z-index: 2;
             pointer-events: none;
         }
 
-        /* Soft floating glow orbs for a more modern ambient feel */
         .glow-orb {
             position: fixed;
             border-radius: 50%;
@@ -96,27 +102,40 @@
             50% { transform: translate(30px, -20px) scale(1.1); }
         }
 
-        .lang-switch {
+        /* Floating Top Bar */
+        .top-navbar {
             position: fixed;
-            top: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            color: var(--blue);
-            border: 1px solid rgba(48, 111, 164, 0.2);
-            padding: 8px 18px;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100;
+        }
+        .html-tag.rtl .top-navbar { right: auto; left: 24px; }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            color: var(--blue-dark);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 9px 18px;
             cursor: pointer;
             border-radius: 100px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
             transition: var(--transition);
-            z-index: 100;
         }
-        .lang-switch:hover {
+        .nav-btn svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; }
+        .nav-btn:hover {
             background: var(--blue);
             color: var(--white);
             transform: translateY(-2px);
+            box-shadow: 0 14px 35px rgba(48,111,164,0.4);
         }
+        .nav-btn:hover svg { stroke: #fff; }
 
         /* Minimalist Glass Card Container */
         .card {
@@ -148,593 +167,664 @@
         }
 
         .hero-bar {
-            padding: 36px 36px 16px;
-            display: flex;
+            position: relative;
+            padding: 32px 36px;
+            background: linear-gradient(135deg, rgba(48, 111, 164, 0.08), rgba(9, 13, 22, 0.03));
+            border-bottom: 1px solid rgba(48, 111, 164, 0.1);
+            text-align: center;
+        }
+
+        .logo-container {
+            display: inline-flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            margin-bottom: 8px;
         }
-
         .logo-img {
-            max-width: 150px;
+            max-width: 130px;
             height: auto;
-            margin-bottom: 0;
-        }
-
-        /* Progress Steps Bar */
-        .step-progress {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            padding: 0 36px;
-            margin-bottom: 6px;
-        }
-        .dot {
-            width: 20px;
-            height: 4px;
-            border-radius: 100px;
-            background: var(--border);
-            transition: var(--transition);
-        }
-        .dot.active { background: var(--blue); width: 40px; }
-        .dot.done { background: var(--blue-dark); opacity: 0.4; }
-
-        /* Steps Animation Layout */
-        .step {
-            display: none;
-            padding: 36px;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: var(--transition);
-        }
-        .step.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .step h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--text);
             margin-bottom: 10px;
-            letter-spacing: -0.3px;
+            filter: drop-shadow(0 6px 12px rgba(48, 111, 164, 0.2));
+            transition: transform 0.4s ease;
         }
-        .step p.desc {
-            color: var(--text-muted);
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 28px;
-            font-weight: 400;
+        .logo-container:hover .logo-img { transform: scale(1.04); }
+
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--blue-dark);
+            letter-spacing: -0.5px;
+            line-height: 1.1;
         }
 
-        /* --- Welcome step (modernized) --- */
-        #step-1 { text-align: center; position: relative; }
+        .tagline {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
 
         .live-badge {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            background: rgba(48, 111, 164, 0.08);
-            border: 1px solid rgba(48, 111, 164, 0.18);
+            gap: 6px;
+            background: rgba(48, 111, 164, 0.1);
+            border: 1px solid rgba(48, 111, 164, 0.2);
             color: var(--blue-dark);
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 700;
-            letter-spacing: 0.6px;
-            padding: 6px 14px;
+            padding: 5px 14px;
             border-radius: 100px;
-            margin-bottom: 18px;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+            margin-top: 14px;
         }
         .live-dot {
-            width: 6px; height: 6px;
+            width: 7px; height: 7px;
+            background: #22c55e;
             border-radius: 50%;
-            background: var(--blue);
-            animation: pulseDot 1.8s ease-in-out infinite;
+            box-shadow: 0 0 10px #22c55e;
+            animation: pulse 2s infinite;
         }
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.7); }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        #step-1 .tagline {
-            display: inline-block;
-            color: var(--blue);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-        }
-
-        #step-1 h2 {
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-        }
-        #step-1 p.desc {
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .feature-pills {
+        .progress-bar {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
             gap: 8px;
-            margin-bottom: 30px;
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+            padding: 16px 36px 0;
+        }
+        .dot {
+            height: 4px;
+            flex: 1;
+            background: #e2e8f0;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        .dot.active { background: var(--blue); }
+        .dot.done { background: var(--blue-dark); }
+
+        .step {
+            display: none;
+            padding: 32px 36px;
+        }
+        .step.active { display: block; }
+
+        h2.title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--text);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        p.desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .pills {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
         }
         .pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #f1f6fb;
-            color: var(--blue-dark);
-            font-size: 12.5px;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 12px;
             font-weight: 600;
-            padding: 7px 13px;
+            padding: 6px 14px;
             border-radius: 100px;
-            border: 1px solid rgba(48, 111, 164, 0.12);
         }
+        .pill svg { width: 14px; height: 14px; stroke: var(--blue); fill: none; stroke-width: 2; }
 
-        #step-1 .btn-wrap {
-            opacity: 0;
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        .btn {
+            width: 100%;
+            background: var(--blue);
+            color: var(--white);
+            border: none;
+            padding: 16px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 16px;
+            box-shadow: 0 10px 24px var(--blue-glow);
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
+        .btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; }
+        .btn:hover {
+            background: var(--blue-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(30, 74, 112, 0.4);
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        /* Signature element: abstract accordion bellows motif */
-        .bellows-motif {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            width: 64px;
-            height: 64px;
-            opacity: 0.16;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .rtl .bellows-motif { right: auto; left: 14px; }
-        .bellows-motif svg { width: 100%; height: 100%; }
-        .bellows-fold {
-            transform-origin: center;
-            animation: breathe 4.5s ease-in-out infinite;
-        }
-        @keyframes breathe {
-            0%, 100% { transform: scaleX(1); }
-            50% { transform: scaleX(0.82); }
-        }
-
-        /* Forms Styling */
-        .field-group { margin-bottom: 18px; text-align: left; }
+        .field-group { margin-bottom: 18px; }
         .field-group label {
             display: block;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 8px;
         }
-
-        .input-with-icon {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        .input-with-icon .input-icon {
-            position: absolute;
-            right: 16px;
-            color: var(--text-muted);
-            font-size: 15px;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        select.select-field,
-        .flatpickr-input-custom {
+        input[type="text"], input[type="email"], input[type="password"], select, .flatpickr-input-custom {
             width: 100%;
             padding: 14px 16px;
             border: 1.5px solid var(--border);
             border-radius: 14px;
-            font-size: 15px;
+            font-size: 14.5px;
             font-family: inherit;
-            color: var(--text);
-            background: transparent;
-            transition: var(--transition);
             outline: none;
+            background: #fff;
+            color: var(--text);
+            transition: var(--transition);
         }
-
-        select.select-field {
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            background-size: 16px;
-            padding-right: 38px;
-            cursor: pointer;
-        }
-        .rtl select.select-field {
-            background-position: left 14px center;
-            padding-right: 16px;
-            padding-left: 38px;
-        }
-
-        input:focus, select.select-field:focus, .flatpickr-input-custom:focus {
+        input:focus, select:focus, .flatpickr-input-custom:focus {
             border-color: var(--blue);
-            background-color: var(--white);
             box-shadow: 0 10px 30px rgba(48, 111, 164, 0.08);
         }
 
-        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .field-row { display: flex; gap: 12px; }
+        .field-row .field-group { flex: 1; }
 
-        /* Divider with label, used to separate the main info from expand trigger */
+        .input-with-icon { position: relative; }
+        .input-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px; height: 18px;
+            stroke: var(--text-muted);
+            fill: none; stroke-width: 2;
+            pointer-events: none;
+        }
+        .html-tag.rtl .input-icon { right: auto; left: 14px; }
+
+        .btn-more {
+            width: 100%;
+            background: transparent;
+            border: 1.5px dashed var(--border);
+            color: var(--blue);
+            padding: 12px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13.5px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .btn-more svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2.2; }
+        .btn-more:hover {
+            border-color: var(--blue);
+            background: rgba(48, 111, 164, 0.04);
+        }
+
+        .expand-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+            opacity: 0;
+        }
+        .expand-section.show {
+            max-height: 800px;
+            opacity: 1;
+            margin-top: 20px;
+        }
+
         .section-divider {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin: 6px 0 22px;
-            color: var(--text-muted);
+            margin: 24px 0 18px;
             font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-weight: 800;
+            color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 1.5px;
         }
-        .section-divider::before,
-        .section-divider::after {
+        .section-divider::before, .section-divider::after {
             content: '';
             flex: 1;
             height: 1px;
             background: var(--border);
         }
 
-        /* More Information toggle button (secondary style) */
-        .btn-more {
-            width: 100%;
-            background: transparent;
-            color: var(--blue-dark);
-            border: 1.5px dashed rgba(48, 111, 164, 0.4);
-            padding: 14px 24px;
-            font-size: 14.5px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            border-radius: 14px;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-more:hover {
-            border-color: var(--blue);
-            background: rgba(48, 111, 164, 0.05);
-        }
-        .btn-more .plus-icon {
-            font-size: 16px;
-            transition: var(--transition);
-        }
-
-        /* Expand section that scales open with the additional fields */
-        .expand-section {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: max-height 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease 0.05s, margin 0.5s ease;
-        }
-        .expand-section.show {
-            max-height: 1200px;
-            opacity: 1;
-            margin-top: 22px;
-        }
-
-        .quote-hint {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-top: -8px;
-            margin-bottom: 18px;
-        }
-
-        /* Hint shown below the "More Information" button, hidden once section expands */
-        .skip-hint {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 10px;
-            line-height: 1.5;
-            transition: opacity 0.35s ease, max-height 0.35s ease, margin 0.35s ease;
-            max-height: 40px;
-            overflow: hidden;
-        }
-        .skip-hint.hidden {
-            opacity: 0;
-            max-height: 0;
-            margin: 0;
-        }
-
-        /* Sound system toggle cards (re-styled from the original payment selector) */
-        .toggle-pair {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 6px;
-        }
+        .toggle-pair { display: flex; gap: 12px; }
         .toggle-card {
+            flex: 1;
             border: 1.5px solid var(--border);
             border-radius: 16px;
-            padding: 16px;
+            padding: 16px 12px;
             text-align: center;
             cursor: pointer;
-            background: var(--white);
             transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
+            background: #fff;
         }
-        .toggle-card .toggle-icon { font-size: 21px; transition: var(--transition); }
-        .toggle-card .toggle-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
-        .toggle-card:hover { border-color: var(--blue); transform: translateY(-2px); }
+        .toggle-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 8px;
+            transition: var(--transition);
+        }
+        .toggle-icon svg { width: 18px; height: 18px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
+        .toggle-card:hover { border-color: var(--blue-light); }
         .toggle-card.selected {
             border-color: var(--blue);
-            background: rgba(48, 111, 164, 0.08);
-            box-shadow: 0 12px 25px rgba(48, 111, 164, 0.08);
+            background: rgba(48, 111, 164, 0.04);
         }
-        .toggle-card.selected .toggle-icon { transform: scale(1.12); }
-
-        /* Buttons Styling */
-        .btn {
-            width: 100%;
+        .toggle-card.selected .toggle-icon {
             background: var(--blue);
-            color: var(--white);
-            border: none;
-            padding: 16px 28px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
+        }
+        .toggle-card.selected .toggle-icon svg { stroke: #fff; }
+        .toggle-title { font-size: 13px; font-weight: 700; color: var(--text); }
+
+        .account-box {
+            background: rgba(48, 111, 164, 0.04);
+            border: 1.5px solid rgba(48, 111, 164, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 18px;
+        }
+        .account-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--blue-dark);
             cursor: pointer;
-            border-radius: 14px;
+        }
+        .account-checkbox-label input { width: 18px; height: 18px; accent-color: var(--blue); }
+
+        .quote-hint {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .skip-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
             margin-top: 10px;
-            transition: var(--transition);
-            letter-spacing: -0.1px;
+            transition: opacity 0.3s ease;
+        }
+        .skip-hint.hidden { opacity: 0; display: none; }
+
+        /* Step 3 Confirmation Details */
+        .success-icon {
+            width: 64px; height: 64px;
+            background: rgba(48, 111, 164, 0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .success-icon svg { width: 32px; height: 32px; stroke: var(--blue); fill: none; stroke-width: 2.5; }
+
+        #booking-summary {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+        .summary-row {
+            display: flex; justify-content: space-between;
+            font-size: 13.5px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row span { color: var(--text-muted); }
+        .summary-row strong { color: var(--text); font-weight: 700; }
+
+        /* Modal Overlay Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 200;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-card {
+            background: #fff;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 480px;
+            padding: 32px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
             position: relative;
-            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
         }
-        .btn::after {
-            content: '';
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+
+        .modal-close {
             position: absolute;
-            top: 0; left: -120%;
-            width: 60%; height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
-            transform: skewX(-20deg);
-            transition: left 0.6s ease;
-        }
-        .btn:hover::after { left: 130%; }
-
-        .btn:hover {
-            background: var(--blue-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 15px 30px rgba(48, 111, 164, 0.2);
-        }
-
-        .btn:active { transform: translateY(1px); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-        /* RTL (Arabic Support) Layout Shifts */
-        .rtl { direction: rtl; }
-        .rtl .lang-switch { right: auto; left: 30px; }
-        .rtl .field-group { text-align: right; }
-        .rtl .input-with-icon .input-icon { right: auto; left: 16px; }
-
-        .divider { height: 1px; background: var(--border); margin: 24px 0; }
-
-        /* Success step */
-        #step-3 { text-align: center; }
-        .success-icon {
-            width: 74px; height: 74px;
+            top: 20px; right: 20px;
+            background: #f1f5f9;
+            border: none;
+            width: 32px; height: 32px;
             border-radius: 50%;
-            background: rgba(48, 111, 164, 0.1);
+            cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 22px;
-            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .success-icon svg { width: 34px; height: 34px; }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
             color: var(--text-muted);
-            margin-bottom: 12px;
-            text-align: left;
+            transition: var(--transition);
         }
-        .rtl .summary-row { text-align: right; }
-        .summary-row strong { color: var(--text); font-weight: 600; }
+        .html-tag.rtl .modal-close { right: auto; left: 20px; }
+        .modal-close:hover { background: #e2e8f0; color: var(--text); }
+        .modal-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; }
 
-        @media (max-width: 420px) {
-            .field-row, .toggle-pair { grid-template-columns: 1fr; }
-            .step { padding: 28px 24px; }
-            .hero-bar { padding: 28px 24px 14px; }
+        .modal-tabs { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 24px; }
+        .modal-tab {
+            flex: 1; text-align: center; padding: 12px; font-size: 14px; font-weight: 700;
+            color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+            transition: var(--transition);
         }
+        .modal-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+        .user-booking-item {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .user-booking-item:last-child { margin-bottom: 0; }
+        .user-booking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .user-booking-title { font-weight: 700; color: var(--text); font-size: 15px; }
+
+        .badge-status {
+            display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
+        }
+        .badge-status.Pending { background: var(--amber-bg); color: var(--amber); }
+        .badge-status.Confirmed { background: var(--green-bg); color: var(--green); }
+        .badge-status.Cancelled { background: var(--red-bg); color: var(--red); }
+
+        .rtl { direction: rtl; text-align: right; }
     </style>
 </head>
 <body>
 
-<div class="glow-orb one"></div>
-<div class="glow-orb two"></div>
+    <div class="glow-orb one"></div>
+    <div class="glow-orb two"></div>
 
-<button class="lang-switch" onclick="toggleLanguage()">العربية / EN</button>
-
-<div class="card" id="main-container">
-
-    <div class="hero-bar">
-        <img src="logo.png" alt="Accordionella" class="logo-img" onerror="this.style.display='none'">
-    </div>
-
-    <div class="step-progress" id="progress-bar">
-        <div class="dot active" id="d1"></div>
-        <div class="dot" id="d2"></div>
-        <div class="dot" id="d3"></div>
-    </div>
-
-    <div id="step-1" class="step active">
-        <div class="bellows-motif">
-            <svg viewBox="0 0 64 64" fill="none">
-                <g class="bellows-fold" stroke="#306fa4" stroke-width="2.4" stroke-linecap="round">
-                    <line x1="14" y1="10" x2="14" y2="54"/>
-                    <line x1="21" y1="10" x2="21" y2="54"/>
-                    <line x1="28" y1="10" x2="28" y2="54"/>
-                    <line x1="35" y1="10" x2="35" y2="54"/>
-                    <line x1="42" y1="10" x2="42" y2="54"/>
-                </g>
-                <rect x="6" y="8" width="6" height="48" rx="2" fill="#306fa4"/>
-                <rect x="46" y="8" width="6" height="48" rx="2" fill="#306fa4"/>
-            </svg>
-        </div>
-
-        <span class="live-badge"><span class="live-dot"></span><span id="live-badge-text">Now Booking 2026 Season</span></span>
-        <span class="tagline" id="tagline-text">Premium Music Experience</span>
-        <h2 id="welcome-title">Book Accordionella</h2>
-        <p class="desc" id="welcome-desc">Reserve the premium musical experience for your elite events — weddings, corporate galas, private parties & more.</p>
-
-        <div class="feature-pills">
-            <span class="pill">🎻 <span id="pill-1">Live Performance</span></span>
-            <span class="pill">📍 <span id="pill-2">Any Venue</span></span>
-            <span class="pill">🎚️ <span id="pill-3">Sound System Optional</span></span>
-        </div>
-
-        <div class="btn-wrap">
-            <button class="btn" onclick="nextStep(2)" id="welcome-btn">Start Your Reservation →</button>
-        </div>
-    </div>
-
-    <div id="step-2" class="step">
-        <h2 id="step2-title">Tell Us About Your Event</h2>
-        <p class="desc" id="step2-desc">Share a few details and we'll prepare everything for your booking.</p>
-
-        <div class="field-group">
-            <label id="label-name">Full Name</label>
-            <input type="text" id="client-name" placeholder="Your name" required>
-        </div>
-        <div class="field-group">
-            <label id="label-phone">Phone Number</label>
-            <input type="tel" id="client-phone" placeholder="+20 100 000 0000" required>
-        </div>
-        <div class="field-group">
-            <label id="label-referral">How Did You Hear About Us?</label>
-            <select class="select-field" id="client-referral" required></select>
-        </div>
-        <div class="field-group">
-            <label id="label-event-type">Event Type</label>
-            <select class="select-field" id="event-type" required></select>
-        </div>
-
-        <button class="btn-more" id="more-info-btn" onclick="toggleMoreInfo()">
-            <span class="plus-icon">+</span><span id="more-info-text">More Information</span>
+    <!-- Floating Top Bar -->
+    <div class="top-navbar">
+        <button class="nav-btn" id="user-auth-trigger" onclick="openAuthModal()">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span id="user-nav-text">Account Login</span>
         </button>
-        <p class="skip-hint" id="skip-hint-text">Or submit now — we'll call to gather the remaining details.</p>
-
-        <div class="expand-section" id="expand-section">
-            <div class="section-divider" id="more-details-label">Event &amp; Quotation Details</div>
-
-            <div class="field-group">
-                <label id="label-email">Email Address</label>
-                <input type="email" id="client-email" placeholder="you@example.com" required>
-            </div>
-
-            <div class="field-row">
-                <div class="field-group">
-                    <label id="label-date">Event Date</label>
-                    <input type="text" id="booking-date" class="flatpickr-input-custom" placeholder="Select Date.." readonly required>
-                </div>
-                <div class="field-group">
-                    <label id="label-time">Start Time</label>
-                    <div class="input-with-icon">
-                        <input type="text" id="booking-time" class="flatpickr-input-custom" placeholder="Select Time.." readonly required>
-                        <span class="input-icon">🕒</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="field-group">
-                <label id="label-location">Event Location</label>
-                <input type="text" id="event-location" placeholder="Venue name or address" required>
-            </div>
-
-            <div class="field-group">
-                <label id="label-sound">Do You Need a Sound System?</label>
-                <div class="toggle-pair">
-                    <div class="toggle-card" onclick="selectSoundSystem('yes')" id="sound-yes">
-                        <div class="toggle-icon">🔊</div>
-                        <div class="toggle-title" id="sound-yes-text">Yes, please</div>
-                    </div>
-                    <div class="toggle-card" onclick="selectSoundSystem('no')" id="sound-no">
-                        <div class="toggle-icon">🚫</div>
-                        <div class="toggle-title" id="sound-no-text">No, we'll arrange</div>
-                    </div>
-                </div>
-                <p class="quote-hint" id="quote-hint">This helps us prepare an accurate quotation for your event.</p>
-            </div>
-        </div>
-
-        <button class="btn" onclick="submitBooking()" id="submit-btn" style="margin-top:22px;">
-            <span id="submit-btn-text">Submit Booking Request</span>
+        <button class="nav-btn" onclick="toggleLanguage()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span id="lang-switch-text">العربية</span>
         </button>
     </div>
 
-    <div id="step-3" class="step">
-        <div class="success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#306fa4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        </div>
-        <h2 id="step3-title">Request Received!</h2>
-        <p class="desc" id="step3-desc">Thank you! Our team will call you shortly to confirm your event details and finalize your quotation.</p>
-
-        <div id="booking-summary">
-            <div class="summary-row">
-                <span id="sum-label-name">Name</span>
-                <strong id="sum-name">—</strong>
+    <!-- Main Card Container -->
+    <div class="card" id="main-container">
+        
+        <!-- Hero Header -->
+        <div class="hero-bar">
+            <div class="logo-container">
+                <img src="logo.png" alt="Accordionella Logo" class="logo-img" onerror="this.style.display='none'">
+                <div class="brand-name">Accordionella</div>
+                <div class="tagline" id="tagline-text">Premium Music Experience</div>
             </div>
-            <div class="summary-row">
-                <span id="sum-label-date">Event Date</span>
-                <strong id="sum-datetime">—</strong>
+            <div>
+                <span class="live-badge">
+                    <span class="live-dot"></span>
+                    <span id="live-badge-text">Now Booking 2026 Season</span>
+                </span>
             </div>
-            <div class="summary-row">
-                <span id="sum-label-type">Event Type</span>
-                <strong id="sum-type">—</strong>
-            </div>
-            <div class="divider"></div>
         </div>
 
-        <button class="btn" onclick="resetForm()" id="reset-btn">Book Another Event</button>
+        <div class="progress-bar">
+            <div class="dot active" id="d1"></div>
+            <div class="dot" id="d2"></div>
+            <div class="dot" id="d3"></div>
+        </div>
+
+        <!-- Step 1: Welcome -->
+        <div id="step-1" class="step active">
+            <h2 class="title" id="welcome-title">Book Accordionella</h2>
+            <p class="desc" id="welcome-desc">Reserve the premium musical experience for your elite events — weddings, corporate galas, private parties &amp; more.</p>
+
+            <div class="pills">
+                <span class="pill">
+                    <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                    <span id="pill-1">Live Performance</span>
+                </span>
+                <span class="pill">
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span id="pill-2">Any Venue</span>
+                </span>
+                <span class="pill">
+                    <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <span id="pill-3">Sound System Optional</span>
+                </span>
+            </div>
+
+            <button class="btn" onclick="nextStep(2)">
+                <span id="welcome-btn">Start Your Reservation</span>
+                <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+        </div>
+
+        <!-- Step 2: Form Details -->
+        <div id="step-2" class="step">
+            <h2 class="title" id="step2-title">Tell Us About Your Event</h2>
+            <p class="desc" id="step2-desc">Share a few details and we'll prepare everything for your booking.</p>
+
+            <div class="field-group">
+                <label id="label-name">Full Name</label>
+                <input type="text" id="client-name" placeholder="Your name" required>
+            </div>
+
+            <div class="field-group">
+                <label id="label-phone">Phone Number</label>
+                <input type="text" id="client-phone" placeholder="+20 100 000 0000" required>
+            </div>
+
+            <div class="field-group">
+                <label id="label-referral">How Did You Hear About Us?</label>
+                <select class="select-field" id="client-referral" required></select>
+            </div>
+
+            <div class="field-group">
+                <label id="label-event-type">Event Type</label>
+                <select class="select-field" id="event-type" required></select>
+            </div>
+
+            <button class="btn-more" id="more-info-btn" onclick="toggleMoreInfo()">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span id="more-info-text">More Information</span>
+            </button>
+            <p class="skip-hint" id="skip-hint-text">Or submit now — we'll call to gather the remaining details.</p>
+
+            <div class="expand-section" id="expand-section">
+                <div class="section-divider" id="more-details-label">Event &amp; Quotation Details</div>
+
+                <div class="field-group">
+                    <label id="label-email">Email Address</label>
+                    <input type="email" id="client-email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label id="label-date">Event Date</label>
+                        <input type="text" id="booking-date" class="flatpickr-input-custom" placeholder="Select Date.." readonly required>
+                    </div>
+                    <div class="field-group">
+                        <label id="label-time">Start Time</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="booking-time" class="flatpickr-input-custom" placeholder="Select Time.." readonly required>
+                            <svg class="input-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label id="label-location">Event Location</label>
+                    <input type="text" id="event-location" placeholder="Venue name or address" required>
+                </div>
+
+                <div class="field-group">
+                    <label id="label-sound">Do You Need a Sound System?</label>
+                    <div class="toggle-pair">
+                        <div class="toggle-card" onclick="selectSoundSystem('yes')" id="sound-yes">
+                            <div class="toggle-icon">
+                                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                            </div>
+                            <div class="toggle-title" id="sound-yes-text">Yes, please</div>
+                        </div>
+                        <div class="toggle-card" onclick="selectSoundSystem('no')" id="sound-no">
+                            <div class="toggle-icon">
+                                <svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v6a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path></svg>
+                            </div>
+                            <div class="toggle-title" id="sound-no-text">No, we'll arrange</div>
+                        </div>
+                    </div>
+                    <p class="quote-hint" id="quote-hint">This helps us prepare an accurate quotation for your event.</p>
+                </div>
+
+                <!-- Account Creation Prompt -->
+                <div class="account-box" id="account-creation-box">
+                    <label class="account-checkbox-label">
+                        <input type="checkbox" id="chk-create-account" onchange="toggleAccountFields()">
+                        <span id="label-chk-account">Create an account to track your reservation status</span>
+                    </label>
+
+                    <div id="account-fields" style="display:none; margin-top:14px;">
+                        <div class="field-group">
+                            <label id="label-acc-user">Account Username</label>
+                            <input type="text" id="acc-username" placeholder="Choose a username">
+                        </div>
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label id="label-acc-pass">Account Password</label>
+                            <input type="password" id="acc-password" placeholder="Choose a password (min 6 chars)">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="btn" onclick="submitBooking()" id="submit-btn" style="margin-top:22px;">
+                <span id="submit-btn-text">Submit Booking Request</span>
+                <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+        </div>
+
+        <!-- Step 3: Success Confirmation -->
+        <div id="step-3" class="step">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 class="title" id="step3-title">Request Received!</h2>
+            <p class="desc" id="step3-desc">Thank you! Our team will call you shortly to confirm your event details and finalize your quotation.</p>
+
+            <div id="booking-summary">
+                <div class="summary-row">
+                    <span id="sum-label-name">Name</span>
+                    <strong id="sum-name">—</strong>
+                </div>
+                <div class="summary-row">
+                    <span id="sum-label-date">Event Date</span>
+                    <strong id="sum-datetime">—</strong>
+                </div>
+                <div class="summary-row">
+                    <span id="sum-label-type">Event Type</span>
+                    <strong id="sum-type">—</strong>
+                </div>
+            </div>
+
+            <button class="btn" onclick="resetForm()" id="reset-btn">Book Another Event</button>
+        </div>
+
     </div>
 
-</div>
+    <!-- Client Account & Auth Modal -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeAuthModal()">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <!-- User Auth Form (When logged out) -->
+            <div id="modal-auth-view">
+                <div class="modal-tabs">
+                    <div class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</div>
+                    <div class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</div>
+                </div>
+
+                <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+                    <div class="field-group">
+                        <label id="lbl-auth-login">Username or Email</label>
+                        <input type="text" id="auth-login" required placeholder="Enter username or email">
+                    </div>
+
+                    <div class="field-group" id="group-auth-email" style="display:none;">
+                        <label>Email Address</label>
+                        <input type="email" id="auth-email" placeholder="you@example.com">
+                    </div>
+
+                    <div class="field-group">
+                        <label id="lbl-auth-pass">Password</label>
+                        <input type="password" id="auth-pass" required placeholder="Enter password">
+                    </div>
+
+                    <button type="submit" class="btn" id="btn-auth-submit" style="margin-top:10px;">
+                        <span id="btn-auth-text">Log In</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Logged-In User Profile View -->
+            <div id="modal-profile-view" style="display:none;">
+                <h3 style="font-family:'Playfair Display',serif; font-size:22px; margin-bottom:4px;" id="user-greeting">Welcome back!</h3>
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;" id="user-email-display"></p>
+
+                <div style="border-top:1px solid var(--border); padding-top:16px;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:12px;">Your Reservations</h4>
+                    <div id="user-bookings-list" style="max-height:260px; overflow-y:auto;">
+                        <p style="color:var(--text-muted); font-size:13px;">Loading your activity...</p>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="userLogout()" style="margin-top:20px; background:var(--text-muted);">
+                    <span>Log Out</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
 <script>
     let currentLang = 'en';
@@ -742,15 +832,20 @@
     let disabledDates = [];
     let bookedSlotsGlobal = [];
     let datePickerInstance, timePickerInstance;
+    let activeAuthTab = 'login';
+    let loggedInUser = null;
 
     const translations = {
         en: {
+            langSwitchText: "العربية",
+            userNavLogin: "Account Login",
+            userNavWelcome: "My Account",
             liveBadge: "Now Booking 2026 Season",
             tagline: "Premium Music Experience",
             welcomeTitle: "Book Accordionella",
             welcomeDesc: "Reserve the premium musical experience for your elite events — weddings, corporate galas, private parties & more.",
             pill1: "Live Performance", pill2: "Any Venue", pill3: "Sound System Optional",
-            welcomeBtn: "Start Your Reservation →",
+            welcomeBtn: "Start Your Reservation",
             step2Title: "Tell Us About Your Event",
             step2Desc: "Share a few details and we'll prepare everything for your booking.",
             labelName: "Full Name", namePlh: "Your name",
@@ -781,6 +876,9 @@
             labelLocation: "Event Location", locationPlh: "Venue name or address",
             labelSound: "Do You Need a Sound System?",
             soundYes: "Yes, please", soundNo: "No, we'll arrange",
+            labelChkAccount: "Create an account to track your reservation status",
+            labelAccUser: "Account Username",
+            labelAccPass: "Account Password",
             quoteHint: "This helps us prepare an accurate quotation for your event.",
             submitBtnText: "Submit Booking Request",
             step3Title: "Request Received!",
@@ -794,12 +892,15 @@
             errNetwork: "Submission failed. Please try again."
         },
         ar: {
+            langSwitchText: "English",
+            userNavLogin: "تسجيل الدخول",
+            userNavWelcome: "حسابي",
             liveBadge: "الحجز متاح الآن لموسم 2026",
             tagline: "تجربة موسيقية راقية",
             welcomeTitle: "احجز أكورديونيلا",
             welcomeDesc: "احجز التجربة الموسيقية الفاخرة لمناسباتك المميزة — حفلات الزفاف، الفعاليات الراقية، والحفلات الخاصة.",
             pill1: "عزف حي", pill2: "أي مكان", pill3: "نظام صوت اختياري",
-            welcomeBtn: "ابدأ الحجز الآن ←",
+            welcomeBtn: "ابدأ الحجز الآن",
             step2Title: "أخبرنا عن مناسبتك",
             step2Desc: "شاركنا بعض التفاصيل وسنجهز كل شيء لحجزك.",
             labelName: "الاسم الكامل", namePlh: "اسمك الكامل",
@@ -830,6 +931,9 @@
             labelLocation: "مكان المناسبة", locationPlh: "اسم القاعة أو العنوان",
             labelSound: "هل تحتاج إلى نظام صوت؟",
             soundYes: "نعم، أحتاج", soundNo: "لا، سأقوم بالترتيب",
+            labelChkAccount: "إنشاء حساب لمتابعة حالة حجزك ومواعيدك",
+            labelAccUser: "اسم المستخدم للحساب",
+            labelAccPass: "كلمة المرور",
             quoteHint: "يساعدنا هذا في تجهيز عرض سعر دقيق لمناسبتك.",
             submitBtnText: "إرسال طلب الحجز",
             step3Title: "تم استلام طلبك!",
@@ -847,7 +951,8 @@
     document.addEventListener("DOMContentLoaded", () => {
         populateSelectOptions();
         applyTranslations();
-        // Fetch existing slots from backend to disable booked days
+        checkUserSession();
+
         fetch('get_booked_slots.php')
             .then(res => res.json())
             .then(data => {
@@ -859,6 +964,30 @@
             })
             .catch(() => initCalendars());
     });
+
+    function checkUserSession() {
+        fetch('get_user_bookings.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.user) {
+                    loggedInUser = data.user;
+                    updateUserNavUI();
+                }
+            })
+            .catch(e => console.error(e));
+    }
+
+    function updateUserNavUI() {
+        const t = translations[currentLang];
+        const btnText = document.getElementById('user-nav-text');
+        if (loggedInUser) {
+            btnText.innerText = loggedInUser.username;
+            document.getElementById('account-creation-box').style.display = 'none';
+        } else {
+            btnText.innerText = t.userNavLogin;
+            document.getElementById('account-creation-box').style.display = 'block';
+        }
+    }
 
     function initCalendars() {
         datePickerInstance = flatpickr("#booking-date", {
@@ -912,8 +1041,16 @@
         document.getElementById('sound-no').classList.toggle('selected', choice === 'no');
     }
 
+    function toggleAccountFields() {
+        const chk = document.getElementById('chk-create-account');
+        document.getElementById('account-fields').style.display = chk.checked ? 'block' : 'none';
+    }
+
     function applyTranslations() {
         const t = translations[currentLang];
+        document.getElementById('lang-switch-text').innerText = t.langSwitchText;
+        updateUserNavUI();
+
         document.getElementById('live-badge-text').innerText = t.liveBadge;
         document.getElementById('tagline-text').innerText = t.tagline;
         document.getElementById('welcome-title').innerText = t.welcomeTitle;
@@ -943,6 +1080,11 @@
         document.getElementById('label-sound').innerText = t.labelSound;
         document.getElementById('sound-yes-text').innerText = t.soundYes;
         document.getElementById('sound-no-text').innerText = t.soundNo;
+
+        document.getElementById('label-chk-account').innerText = t.labelChkAccount;
+        document.getElementById('label-acc-user').innerText = t.labelAccUser;
+        document.getElementById('label-acc-pass').innerText = t.labelAccPass;
+
         document.getElementById('quote-hint').innerText = t.quoteHint;
         document.getElementById('submit-btn-text').innerText = t.submitBtnText;
         document.getElementById('skip-hint-text').innerText = t.skipHint;
@@ -1009,13 +1151,11 @@
         const referral = document.getElementById('client-referral').value;
         const eventType = document.getElementById('event-type').value;
 
-        // Main 4 fields are always required
         if (!name || !phone || !referral || !eventType) {
             alert(t.errorFillMain);
             return;
         }
 
-        // Optional section: only validate its fields if the client chose to expand it
         const isExpanded = document.getElementById('expand-section').classList.contains('show');
         let email = '', date = '', time = '', location = '', sound = 'unset';
 
@@ -1036,20 +1176,33 @@
             sound = chosenSoundSystem;
         }
 
+        const chkCreateAccount = document.getElementById('chk-create-account');
+        const createAccount = chkCreateAccount ? chkCreateAccount.checked : false;
+        const accUsername = document.getElementById('acc-username').value.trim();
+        const accPassword = document.getElementById('acc-password').value;
+
+        if (createAccount && (!accUsername || !accPassword)) {
+            alert(currentLang === 'ar' ? 'يرجى كتابة اسم المستخدم وكلمة المرور لإنشاء الحساب.' : 'Please enter a username and password to create your account.');
+            return;
+        }
+
         const submitBtn = document.getElementById('submit-btn');
         submitBtn.disabled = true;
 
         const formData = {
-            name:            name,
-            phone:           phone,
-            email:           email,
-            referral_source: referral,
-            event_type:      eventType,
-            date:            date,
-            time:            time,
-            event_location:  location,
-            sound_system:    sound,
-            lang:            currentLang
+            name:             name,
+            phone:            phone,
+            email:            email,
+            referral_source:  referral,
+            event_type:       eventType,
+            date:             date,
+            time:             time,
+            event_location:   location,
+            sound_system:     sound,
+            lang:             currentLang,
+            create_account:   createAccount,
+            account_username: accUsername,
+            account_password: accPassword
         };
 
         fetch('process_booking.php', {
@@ -1083,7 +1236,10 @@
                     throw new Error(dbResult.message || `Server error (${response.status})`);
                 }
 
-                // Fire-and-forget: ask the Apps Script to send the "we'll call you soon" email
+                // Check session if account created
+                checkUserSession();
+
+                // Fire-and-forget email alert via Apps Script
                 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyi6xQQ-Ks1R3Yt0No-ZGB8AtwPUnDPIRBd5TqrkgO3MkPtkDWJgH9cJLzXoVNqWumx9g/exec';
                 fetch(googleAppsScriptUrl, {
                     method: 'POST',
@@ -1115,6 +1271,111 @@
                 alert(err.message || t.errNetwork);
             })
             .finally(() => { submitBtn.disabled = false; });
+    }
+
+    /* Client Auth Modal Logic */
+    function openAuthModal() {
+        const modal = document.getElementById('auth-modal');
+        modal.classList.add('active');
+        if (loggedInUser) {
+            document.getElementById('modal-auth-view').style.display = 'none';
+            document.getElementById('modal-profile-view').style.display = 'block';
+            document.getElementById('user-greeting').innerText = `Hello, ${loggedInUser.username}!`;
+            document.getElementById('user-email-display').innerText = loggedInUser.email;
+            loadUserBookings();
+        } else {
+            document.getElementById('modal-auth-view').style.display = 'block';
+            document.getElementById('modal-profile-view').style.display = 'none';
+        }
+    }
+
+    function closeAuthModal() {
+        document.getElementById('auth-modal').classList.remove('active');
+    }
+
+    function switchAuthTab(tab) {
+        activeAuthTab = tab;
+        document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+        document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        document.getElementById('group-auth-email').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('lbl-auth-login').innerText = tab === 'register' ? 'Choose Username' : 'Username or Email';
+        document.getElementById('btn-auth-text').innerText = tab === 'register' ? 'Create Account' : 'Log In';
+    }
+
+    function handleAuthSubmit(e) {
+        e.preventDefault();
+        const loginVal = document.getElementById('auth-login').value.trim();
+        const emailVal = document.getElementById('auth-email').value.trim();
+        const passVal  = document.getElementById('auth-pass').value;
+
+        const endpoint = activeAuthTab === 'register' ? 'user_register.php' : 'user_login.php';
+        const payload  = activeAuthTab === 'register' 
+            ? { username: loginVal, email: emailVal, password: passVal }
+            : { login: loginVal, password: passVal };
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    loggedInUser = data.user;
+                    updateUserNavUI();
+                    openAuthModal();
+                } else {
+                    alert(data.message || 'Authentication failed.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Authentication request failed.');
+            });
+    }
+
+    function userLogout() {
+        fetch('user_logout.php')
+            .then(() => {
+                loggedInUser = null;
+                updateUserNavUI();
+                closeAuthModal();
+            });
+    }
+
+    function loadUserBookings() {
+        const container = document.getElementById('user-bookings-list');
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Loading your activity...</p>';
+
+        fetch('get_user_bookings.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.bookings.length > 0) {
+                    container.innerHTML = data.bookings.map(b => `
+                        <div class="user-booking-item">
+                            <div class="user-booking-header">
+                                <div class="user-booking-title">${escapeHtml(b.event_type || 'Event')}</div>
+                                <span class="badge-status ${b.status}">${escapeHtml(b.status)}</span>
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-muted);">
+                                <div>📅 ${b.booking_date ? b.booking_date + (b.booking_time ? ' at ' + b.booking_time.substring(0,5) : '') : 'Date to be confirmed'}</div>
+                                <div>📍 ${escapeHtml(b.event_location || 'Venue to be confirmed')}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">You have no active event reservations yet.</p>';
+                }
+            })
+            .catch(() => {
+                container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Failed to load reservations.</p>';
+            });
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.innerText = str ?? '';
+        return div.innerHTML;
     }
 
     function resetForm() {
