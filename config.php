@@ -45,6 +45,35 @@ function getDBConnection() {
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
+        // Ensure missing columns are dynamically added if table existed from an older version
+        $existingCols = [];
+        $colStmt = $pdo->query("SHOW COLUMNS FROM `bookings`");
+        while ($row = $colStmt->fetch(PDO::FETCH_ASSOC)) {
+            $existingCols[strtolower($row['Field'])] = true;
+        }
+
+        $neededCols = [
+            'client_name'     => "ADD COLUMN `client_name` VARCHAR(255) NOT NULL DEFAULT ''",
+            'client_email'    => "ADD COLUMN `client_email` VARCHAR(255) DEFAULT ''",
+            'client_phone'    => "ADD COLUMN `client_phone` VARCHAR(100) NOT NULL DEFAULT ''",
+            'referral_source' => "ADD COLUMN `referral_source` VARCHAR(255) NOT NULL DEFAULT ''",
+            'event_type'      => "ADD COLUMN `event_type` VARCHAR(255) NOT NULL DEFAULT ''",
+            'booking_date'    => "ADD COLUMN `booking_date` VARCHAR(50) DEFAULT NULL",
+            'booking_time'    => "ADD COLUMN `booking_time` VARCHAR(50) DEFAULT NULL",
+            'event_location'  => "ADD COLUMN `event_location` TEXT DEFAULT NULL",
+            'sound_system'    => "ADD COLUMN `sound_system` VARCHAR(10) DEFAULT 'no'",
+            'language'        => "ADD COLUMN `language` VARCHAR(10) DEFAULT 'en'",
+            'status'          => "ADD COLUMN `status` VARCHAR(50) DEFAULT 'Pending'",
+            'confirmed_at'    => "ADD COLUMN `confirmed_at` DATETIME DEFAULT NULL",
+            'created_at'      => "ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        ];
+
+        foreach ($neededCols as $col => $alterSql) {
+            if (!isset($existingCols[$col])) {
+                $pdo->exec("ALTER TABLE `bookings` " . $alterSql);
+            }
+        }
+
         return $pdo;
     } catch (PDOException $e) {
         if (ob_get_length()) ob_clean();
