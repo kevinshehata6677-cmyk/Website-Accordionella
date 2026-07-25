@@ -1,0 +1,25 @@
+name: Deploy to InfinityFree FTP
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  web-deploy:
+    name: Sync files to InfinityFree hosting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftpupload.net
+          username: if0_42254420
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          server-dir: htdocs/
+          dangerous-clean-slate: false
