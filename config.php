@@ -74,6 +74,14 @@ function getDBConnection() {
             }
         }
 
+        // Relax NOT NULL constraints on date/time columns if table existed from an older version
+        try {
+            $pdo->exec("ALTER TABLE `bookings` MODIFY `booking_date` VARCHAR(50) NULL DEFAULT ''");
+            $pdo->exec("ALTER TABLE `bookings` MODIFY `booking_time` VARCHAR(50) NULL DEFAULT ''");
+        } catch (Exception $ex) {
+            // Ignore if alter fails
+        }
+
         return $pdo;
     } catch (PDOException $e) {
         if (ob_get_length()) ob_clean();

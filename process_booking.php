@@ -28,8 +28,8 @@ try {
     $clientPhone    = trim($data['phone'] ?? '');
     $referralSource = trim($data['referral_source'] ?? '');
     $eventType      = trim($data['event_type'] ?? '');
-    $bookingDate    = !empty($data['date']) ? trim($data['date']) : null;
-    $bookingTime    = !empty($data['time']) ? trim($data['time']) : null;
+    $bookingDate    = trim($data['date'] ?? '');
+    $bookingTime    = trim($data['time'] ?? '');
     $eventLocation  = trim($data['event_location'] ?? '');
     $soundSystem    = ($data['sound_system'] ?? 'no') === 'yes' ? 'yes' : 'no';
     $language       = $data['lang'] ?? 'en';
