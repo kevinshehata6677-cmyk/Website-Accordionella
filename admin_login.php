@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// If already logged in, go straight to the dashboard
+// If already logged in, go straight to dashboard
 if (!empty($_SESSION['admin_logged_in'])) {
     header('Location: admin.php');
     exit;
@@ -15,22 +15,35 @@ if (!empty($_SESSION['admin_logged_in'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
+    $login    = trim(strtolower($_POST['username'] ?? $_POST['email'] ?? ''));
     $password = $_POST['password'] ?? '';
 
-    $isUsernameValid = (strtolower($username) === strtolower(ADMIN_USERNAME));
-    $isPasswordValid = ($password === 'Accordionella@2026') || 
-                       password_verify($password, ADMIN_PASSWORD_HASH) || 
-                       password_verify($password, str_replace('$2b$', '$2y$', ADMIN_PASSWORD_HASH));
-
-    if ($isUsernameValid && $isPasswordValid) {
-        session_regenerate_id(true);
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_username']  = ADMIN_USERNAME;
-        header('Location: admin.php');
-        exit;
+    if (empty($login) || empty($password)) {
+        $error = 'Please enter your email/username and password.';
     } else {
-        $error = 'Invalid username or password.';
+        try {
+            $pdo = getDBConnection();
+            $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role FROM users WHERE LOWER(email) = :l OR LOWER(username) = :l LIMIT 1");
+            $stmt->execute([':l' => $login]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && password_verify($password, $user['password_hash'])) {
+                if ($user['role'] === 'admin') {
+                    session_regenerate_id(true);
+                    $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_id']        = $user['id'];
+                    $_SESSION['admin_username']  = $user['username'] ?: $user['email'];
+                    header('Location: admin.php');
+                    exit;
+                } else {
+                    $error = 'Access denied. This account does not have admin privileges.';
+                }
+            } else {
+                $error = 'Invalid email/username or password.';
+            }
+        } catch (Exception $e) {
+            $error = 'Authentication error: ' . $e->getMessage();
+        }
     }
 }
 ?>
@@ -81,9 +94,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border: 1px solid rgba(255,255,255,0.4);
         color: var(--text);
     }
+    .toggle-pills {
+        display: flex;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 100px;
+        margin-bottom: 28px;
+    }
+    .toggle-pill {
+        flex: 1;
+        text-align: center;
+        padding: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-muted);
+        border-radius: 100px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+    .toggle-pill.active {
+        background: var(--blue);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(48,111,164,0.3);
+    }
+
     .brand-header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 28px;
     }
     .brand-logo {
         width: 56px; height: 56px;
@@ -128,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         fill: none; stroke-width: 2;
         transition: stroke 0.2s ease;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="email"], input[type="password"] {
         width: 100%;
         padding: 14px 16px 14px 46px;
         border: 1.5px solid var(--border);
@@ -195,11 +232,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="login-card">
+        
+        <!-- Toggle Pill between Client and Admin Portal -->
+        <div class="toggle-pills">
+            <a href="index.html" class="toggle-pill">Client Portal</a>
+            <a href="admin_login.php" class="toggle-pill active">Admin Portal</a>
+        </div>
+
         <div class="brand-header">
             <div class="brand-logo">
                 <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
-            <h1>Admin Portal</h1>
+            <h1>Admin Access</h1>
             <p class="subtitle">Accordionella Management System</p>
         </div>
 
@@ -212,9 +256,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="POST">
             <div class="field-group">
-                <label>Username</label>
+                <label>Admin Email or Username</label>
                 <div class="input-wrapper">
-                    <input type="text" name="username" required autofocus placeholder="Enter admin username">
+                    <input type="text" name="username" required autofocus placeholder="admin@accordionella.com">
                     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 </div>
             </div>

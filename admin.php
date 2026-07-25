@@ -71,7 +71,7 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
         text-transform: uppercase;
         letter-spacing: 1px;
     }
-    .topbar .right { display: flex; align-items: center; gap: 18px; font-size: 13px; }
+    .topbar .right { display: flex; align-items: center; gap: 14px; font-size: 13px; }
     .topbar .admin-badge {
         display: flex; align-items: center; gap: 8px;
         background: rgba(255,255,255,0.06);
@@ -81,6 +81,20 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
         font-weight: 600;
     }
     .topbar .admin-badge svg { width: 15px; height: 15px; stroke: var(--blue-light); fill: none; stroke-width: 2; }
+    .topbar .btn-add-admin {
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 6px;
+        transition: all 0.2s ease;
+    }
+    .topbar .btn-add-admin:hover { background: var(--blue-dark); }
+    .topbar .btn-add-admin svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2.5; }
     .topbar .logout-link {
         color: #fff;
         background: rgba(255,255,255,0.1);
@@ -215,6 +229,35 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
     .client-name { font-weight: 700; color: var(--text); }
     .client-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
     .client-sub svg { width: 13px; height: 13px; stroke: var(--text-muted); fill: none; stroke-width: 2; shrink: 0; }
+
+    /* Modal Overlay */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(9,13,22,0.75); backdrop-filter: blur(10px);
+        z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px;
+        opacity: 0; pointer-events: none; transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card {
+        background: #fff; border-radius: 24px; width: 100%; max-width: 440px; padding: 32px;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.4); position: relative; transform: translateY(20px); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-card { transform: translateY(0); }
+    .modal-close {
+        position: absolute; top: 20px; right: 20px; background: #f1f5f9; border: none;
+        width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        color: var(--text-muted);
+    }
+    .modal-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+    .field-group { margin-bottom: 18px; }
+    .field-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    input[type="email"], input[type="password"] {
+        width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 14px; font-size: 14.5px; outline: none;
+    }
+    input:focus { border-color: var(--blue); }
+    .btn-modal-submit {
+        width: 100%; background: var(--blue); color: #fff; border: none; padding: 15px; border-radius: 14px; font-weight: 700; font-size: 14.5px; cursor: pointer; margin-top: 8px;
+    }
+    .btn-modal-submit:hover { background: var(--blue-dark); }
 </style>
 </head>
 <body>
@@ -234,6 +277,10 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             <span><?php echo $adminUsername; ?></span>
         </div>
+        <button class="btn-add-admin" onclick="openAddAdminModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Register Admin</span>
+        </button>
         <a href="admin_logout.php" class="logout-link">
             <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             <span>Log Out</span>
@@ -304,9 +351,66 @@ $adminUsername = htmlspecialchars($_SESSION['admin_username'] ?? 'Admin');
     </div>
 </div>
 
+<!-- Modal: Register New Admin -->
+<div class="modal-overlay" id="add-admin-modal">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeAddAdminModal()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <h3 style="font-family:'Playfair Display',serif; font-size:22px; margin-bottom:6px;">Register New Admin</h3>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Grant administrative access to another team member.</p>
+
+        <form onsubmit="submitNewAdmin(event)">
+            <div class="field-group">
+                <label>Admin Email Address</label>
+                <input type="email" id="new-admin-email" required placeholder="admin.team@accordionella.com">
+            </div>
+            <div class="field-group">
+                <label>Admin Password</label>
+                <input type="password" id="new-admin-pass" required placeholder="Min 6 characters">
+            </div>
+            <button type="submit" class="btn-modal-submit">Create Admin Account</button>
+        </form>
+    </div>
+</div>
+
 <script>
     let allBookings = [];
     let currentFilter = 'all';
+
+    function openAddAdminModal() {
+        document.getElementById('add-admin-modal').classList.add('active');
+    }
+    function closeAddAdminModal() {
+        document.getElementById('add-admin-modal').classList.remove('active');
+    }
+
+    function submitNewAdmin(e) {
+        e.preventDefault();
+        const email = document.getElementById('new-admin-email').value.trim();
+        const password = document.getElementById('new-admin-pass').value;
+
+        fetch('create_admin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    closeAddAdminModal();
+                    document.getElementById('new-admin-email').value = '';
+                    document.getElementById('new-admin-pass').value = '';
+                } else {
+                    alert(data.message || 'Failed to create admin.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Server request failed.');
+            });
+    }
 
     function setFilter(filter) {
         currentFilter = filter;

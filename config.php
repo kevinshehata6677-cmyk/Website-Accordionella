@@ -10,10 +10,6 @@ define('DB_USER', 'if0_42254420'); // Change to your production database usernam
 define('DB_PASS', 'PzVgZi1rqLuyNZ1');     // Change to your production database password
 define('DB_NAME', 'if0_42254420_accordionella');
 
-// Admin Dashboard Credentials
-define('ADMIN_USERNAME', 'admin');
-define('ADMIN_PASSWORD_HASH', '$2y$10$64oW1c8wW3aX4e5f6g7h8uI9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x');
-
 // Secure Database Connection Helper
 function getDBConnection() {
     try {
@@ -26,6 +22,7 @@ function getDBConnection() {
         // Auto-create bookings table if it doesn't exist yet
         $pdo->exec("CREATE TABLE IF NOT EXISTS `bookings` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `user_id` INT DEFAULT NULL,
             `client_name` VARCHAR(255) NOT NULL,
             `client_email` VARCHAR(255) DEFAULT '',
             `client_phone` VARCHAR(100) NOT NULL,
@@ -45,11 +42,34 @@ function getDBConnection() {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `users` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
             `username` VARCHAR(100) NOT NULL UNIQUE,
-            `email` VARCHAR(255) NOT NULL,
+            `email` VARCHAR(255) NOT NULL UNIQUE,
             `password_hash` VARCHAR(255) NOT NULL,
+            `role` VARCHAR(20) NOT NULL DEFAULT 'client',
             `phone` VARCHAR(100) DEFAULT NULL,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        // Ensure missing columns are dynamically added to users table
+        $userCols = [];
+        $uColStmt = $pdo->query("SHOW COLUMNS FROM `users`");
+        while ($row = $uColStmt->fetch(PDO::FETCH_ASSOC)) {
+            $userCols[strtolower($row['Field'])] = true;
+        }
+        if (!isset($userCols['role'])) {
+            $pdo->exec("ALTER TABLE `users` ADD COLUMN `role` VARCHAR(20) NOT NULL DEFAULT 'client'");
+        }
+
+        // Ensure initial admin account exists in database
+        try {
+            $adminCheck = $pdo->query("SELECT id FROM `users` WHERE `role` = 'admin' OR LOWER(`email`) = 'admin@accordionella.com' OR LOWER(`username`) = 'admin' LIMIT 1");
+            if (!$adminCheck->fetch()) {
+                $adminHash = password_hash('Accordionella@2026', PASSWORD_DEFAULT);
+                $seedStmt = $pdo->prepare("INSERT INTO `users` (`username`, `email`, `password_hash`, `role`) VALUES ('admin', 'admin@accordionella.com', :h, 'admin')");
+                $seedStmt->execute([':h' => $adminHash]);
+            }
+        } catch (Exception $seedEx) {
+            // Ignore seeding exception if table locked
+        }
 
         // Ensure missing columns are dynamically added if table existed from an older version
         $existingCols = [];

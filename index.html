@@ -776,6 +776,11 @@
 
             <!-- User Auth Form (When logged out) -->
             <div id="modal-auth-view">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                    <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700;">Account Portal</div>
+                    <a href="admin_login.php" style="font-size:12px; font-weight:700; color:var(--blue); text-decoration:none;">Admin Portal &rarr;</a>
+                </div>
+
                 <div class="modal-tabs">
                     <div class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</div>
                     <div class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</div>
@@ -1305,6 +1310,10 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                        return;
+                    }
                     loggedInUser = data.user;
                     updateUserNavUI();
                     openAuthModal();
