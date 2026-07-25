@@ -1057,44 +1057,58 @@
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(formData)
         })
-            .then(response => response.text())
-            .then(textData => {
+            .then(async response => {
+                const textData = await response.text();
                 let dbResult;
-                try { dbResult = JSON.parse(textData); } catch (e) {
+                try {
+                    dbResult = JSON.parse(textData);
+                } catch (e) {
                     console.error("Raw response payload error:", textData);
-                    throw new Error("Server database synchronizing fault.");
-                }
-
-                if (dbResult.status === 'success') {
-                    // Fire-and-forget: ask the Apps Script to send the "we'll call you soon" email
-                    const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyi6xQQ-Ks1R3Yt0No-ZGB8AtwPUnDPIRBd5TqrkgO3MkPtkDWJgH9cJLzXoVNqWumx9g/exec';
-                    fetch(googleAppsScriptUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(Object.assign({ action: 'new_request' }, formData))
-                    }).catch(err => console.error("Notification email error:", err));
-
-                    // Success screen summary
-                    document.getElementById('sum-name').innerText = name;
-                    if (date && time) {
-                        const dateObj = new Date(date + 'T' + time);
-                        document.getElementById('sum-datetime').innerText =
-                            dateObj.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
-                            + ' · ' + time;
-                    } else {
-                        document.getElementById('sum-datetime').innerText = currentLang === 'ar' ? 'سيتم التحديد مع الفريق' : 'To be confirmed with our team';
+                    const jsonStart = textData.indexOf('{');
+                    const jsonEnd = textData.lastIndexOf('}');
+                    if (jsonStart !== -1 && jsonEnd > jsonStart) {
+                        try {
+                            dbResult = JSON.parse(textData.substring(jsonStart, jsonEnd + 1));
+                        } catch (e2) {
+                            dbResult = null;
+                        }
                     }
-                    const selectedTypeLabel = document.getElementById('event-type').selectedOptions[0].innerText;
-                    document.getElementById('sum-type').innerText = selectedTypeLabel;
-
-                    document.getElementById('d1').className = 'dot done';
-                    document.getElementById('d2').className = 'dot done';
-                    document.getElementById('d3').className = 'dot active';
-
-                    nextStep(3);
-                } else {
-                    throw new Error(dbResult.message);
+                    if (!dbResult) {
+                        const cleanMsg = textData.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+                        throw new Error(cleanMsg || "Server database synchronizing fault.");
+                    }
                 }
+
+                if (!response.ok || dbResult.status !== 'success') {
+                    throw new Error(dbResult.message || `Server error (${response.status})`);
+                }
+
+                // Fire-and-forget: ask the Apps Script to send the "we'll call you soon" email
+                const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyi6xQQ-Ks1R3Yt0No-ZGB8AtwPUnDPIRBd5TqrkgO3MkPtkDWJgH9cJLzXoVNqWumx9g/exec';
+                fetch(googleAppsScriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(Object.assign({ action: 'new_request' }, formData))
+                }).catch(err => console.error("Notification email error:", err));
+
+                // Success screen summary
+                document.getElementById('sum-name').innerText = name;
+                if (date && time) {
+                    const dateObj = new Date(date + 'T' + time);
+                    document.getElementById('sum-datetime').innerText =
+                        dateObj.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+                        + ' · ' + time;
+                } else {
+                    document.getElementById('sum-datetime').innerText = currentLang === 'ar' ? 'سيتم التحديد مع الفريق' : 'To be confirmed with our team';
+                }
+                const selectedTypeLabel = document.getElementById('event-type').selectedOptions[0].innerText;
+                document.getElementById('sum-type').innerText = selectedTypeLabel;
+
+                document.getElementById('d1').className = 'dot done';
+                document.getElementById('d2').className = 'dot done';
+                document.getElementById('d3').className = 'dot active';
+
+                nextStep(3);
             })
             .catch(err => {
                 console.error("Booking error:", err);

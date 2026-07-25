@@ -3,6 +3,7 @@
 // Saves a new booking request as "Pending". No calendar event is created here —
 // that only happens once the admin confirms the event by phone (see confirm_booking.php).
 
+ob_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 
@@ -16,6 +17,7 @@ try {
     $data = json_decode($inputData, true);
 
     if (!$data) {
+        if (ob_get_length()) ob_clean();
         echo json_encode(["status" => "error", "message" => "Empty or invalid data payload received."]);
         exit;
     }
@@ -26,14 +28,15 @@ try {
     $clientPhone    = trim($data['phone'] ?? '');
     $referralSource = trim($data['referral_source'] ?? '');
     $eventType      = trim($data['event_type'] ?? '');
-    $bookingDate    = $data['date'] ?? '';
-    $bookingTime    = $data['time'] ?? '';
+    $bookingDate    = !empty($data['date']) ? trim($data['date']) : null;
+    $bookingTime    = !empty($data['time']) ? trim($data['time']) : null;
     $eventLocation  = trim($data['event_location'] ?? '');
     $soundSystem    = ($data['sound_system'] ?? 'no') === 'yes' ? 'yes' : 'no';
     $language       = $data['lang'] ?? 'en';
 
     // Only the 4 main fields are always required; the rest are optional
     if (empty($clientName) || empty($clientPhone) || empty($referralSource) || empty($eventType)) {
+        if (ob_get_length()) ob_clean();
         echo json_encode(["status" => "error", "message" => "Required booking fields are missing."]);
         exit;
     }
@@ -68,6 +71,7 @@ try {
         ':lang'       => $language
     ]);
 
+    if (ob_get_length()) ob_clean();
     echo json_encode([
         "status"     => "success",
         "message"    => "Booking request saved. Pending admin confirmation.",
@@ -76,9 +80,11 @@ try {
     exit;
 
 } catch (PDOException $e) {
+    if (ob_get_length()) ob_clean();
     echo json_encode(["status" => "error", "message" => "Database write error: " . $e->getMessage()]);
     exit;
 } catch (Exception $e) {
+    if (ob_get_length()) ob_clean();
     echo json_encode(["status" => "error", "message" => "General processing system error: " . $e->getMessage()]);
     exit;
 }

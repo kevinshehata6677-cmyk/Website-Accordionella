@@ -4,6 +4,7 @@
 //                     (starting 2 hours before the client's chosen time) and email the client.
 // action=cancel   -> marks Cancelled. No calendar event, no Apps Script call.
 
+ob_start();
 require_once 'config.php';
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', 0);
@@ -19,6 +20,7 @@ try {
     $action    = $data['action'] ?? '';
 
     if (!$bookingId || !in_array($action, ['confirm', 'cancel'], true)) {
+        if (ob_get_length()) ob_clean();
         echo json_encode(["status" => "error", "message" => "Missing or invalid booking_id/action."]);
         exit;
     }
@@ -30,6 +32,7 @@ try {
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$booking) {
+        if (ob_get_length()) ob_clean();
         echo json_encode(["status" => "error", "message" => "Booking not found."]);
         exit;
     }
@@ -37,6 +40,7 @@ try {
     if ($action === 'cancel') {
         $upd = $pdo->prepare("UPDATE bookings SET status = 'Cancelled' WHERE id = :id");
         $upd->execute([':id' => $bookingId]);
+        if (ob_get_length()) ob_clean();
         echo json_encode(["status" => "success", "message" => "Booking cancelled."]);
         exit;
     }
@@ -55,7 +59,7 @@ try {
         'referral_source' => $booking['referral_source'],
         'event_type'      => $booking['event_type'],
         'date'            => $booking['booking_date'],
-        'time'            => substr($booking['booking_time'], 0, 5),
+        'time'            => substr($booking['booking_time'] ?? '', 0, 5),
         'event_location'  => $booking['event_location'],
         'sound_system'    => $booking['sound_system'],
         'lang'            => $booking['language'] ?: 'en'
@@ -72,6 +76,7 @@ try {
     $curlError = curl_error($ch);
     curl_close($ch);
 
+    if (ob_get_length()) ob_clean();
     echo json_encode([
         "status"  => "success",
         "message" => "Booking confirmed. Calendar event requested.",
@@ -80,7 +85,9 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    if (ob_get_length()) ob_clean();
     echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
 } catch (Exception $e) {
+    if (ob_get_length()) ob_clean();
     echo json_encode(["status" => "error", "message" => "System error: " . $e->getMessage()]);
 }
