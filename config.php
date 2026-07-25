@@ -2,7 +2,7 @@
 // config.php
 
 // Google Apps Script API Webhook URL
-define('GOOGLE_SCRIPT_URL', 'https://script.google.com/macros/s/AKfycbyyNj3nJwKKzaHl8bRp4cd8EadQKu_l97ggAyLLyiLrXjjBi5PjV48xOoRwn2cF4Uzl/exec');
+define('GOOGLE_SCRIPT_URL', 'https://script.google.com/macros/s/AKfycbyyBjFkdfeXyhBUKUq_MtrlI0KVQAkY7LlAdUuQxnFMrISDwyxllPLVLF8QyDZ5_WhNyA/exec');
 
 // Database Credentials
 define('DB_HOST', 'sql306.infinityfree.com');
